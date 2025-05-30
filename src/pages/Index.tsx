@@ -1,36 +1,138 @@
 
 import React, { useState, useEffect } from 'react';
-import { Timer, User, Award, TrendingUp, Calendar } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Timer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FastTimer from '@/components/FastTimer';
 import ZenMascot from '@/components/ZenMascot';
 import UserProfile from '@/components/UserProfile';
 import Achievements from '@/components/Achievements';
 import Navigation from '@/components/Navigation';
+import AuthModal from '@/components/auth/AuthModal';
+import UserAvatar from '@/components/auth/UserAvatar';
+import ShareModal from '@/components/sharing/ShareModal';
+import SocialLeaderboard from '@/components/sharing/SocialLeaderboard';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState('timer');
-  const [user, setUser] = useState({
-    name: 'Usuário',
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  // Simulação de dados do usuário para compartilhamento
+  const [fastingData, setFastingData] = useState({
+    duration: '16h',
+    streak: 12,
     level: 5,
-    fastPoints: 1250,
-    currentStreak: 12,
-    totalFasts: 48
+    achievement: 'Guerreiro da Madrugada'
   });
+
+  // Verificar se há usuário logado ao carregar
+  useEffect(() => {
+    const savedUser = localStorage.getItem('fastquest_user');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        localStorage.removeItem('fastquest_user');
+      }
+    }
+  }, []);
+
+  const handleAuthSuccess = (newUser: any) => {
+    const userWithStats = {
+      ...newUser,
+      level: 5,
+      fastPoints: 1250,
+      currentStreak: 12,
+      totalFasts: 48
+    };
+    setUser(userWithStats);
+    localStorage.setItem('fastquest_user', JSON.stringify(userWithStats));
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('fastquest_user');
+  };
+
+  const handleOpenShare = () => {
+    setIsShareModalOpen(true);
+  };
 
   const renderView = () => {
     switch (currentView) {
       case 'timer':
         return <FastTimer user={user} setUser={setUser} />;
       case 'profile':
-        return <UserProfile user={user} />;
+        return user ? <UserProfile user={user} /> : null;
       case 'achievements':
-        return <Achievements user={user} />;
+        return user ? <Achievements user={user} /> : null;
+      case 'progress':
+        return user ? <SocialLeaderboard /> : null;
       default:
         return <FastTimer user={user} setUser={setUser} />;
     }
   };
+
+  // Se não há usuário logado, mostrar tela de login
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Timer className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              FastQuest
+            </h1>
+            <p className="text-gray-600 text-lg">
+              Sua jornada de jejum intermitente gamificada
+            </p>
+          </div>
+
+          {/* Features */}
+          <div className="space-y-4 mb-8">
+            <div className="flex items-center gap-3 p-3 bg-white/80 rounded-lg">
+              <span className="text-2xl">🎯</span>
+              <div>
+                <p className="font-semibold">Timer Inteligente</p>
+                <p className="text-sm text-gray-600">Acompanhe seu jejum com fases metabólicas</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-white/80 rounded-lg">
+              <span className="text-2xl">🏆</span>
+              <div>
+                <p className="font-semibold">Sistema de Conquistas</p>
+                <p className="text-sm text-gray-600">Ganhe pontos, badges e suba de nível</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-white/80 rounded-lg">
+              <span className="text-2xl">👥</span>
+              <div>
+                <p className="font-semibold">Comunidade Social</p>
+                <p className="text-sm text-gray-600">Compartilhe conquistas e inspire outros</p>
+              </div>
+            </div>
+          </div>
+
+          <Button
+            onClick={() => setIsAuthModalOpen(true)}
+            className="w-full h-12 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-lg font-semibold"
+          >
+            Começar Jornada
+          </Button>
+        </div>
+
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          onSuccess={handleAuthSuccess}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -45,15 +147,11 @@ const Index = () => {
               FastQuest
             </h1>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="text-right">
-              <p className="text-xs text-gray-500">FastPoints</p>
-              <p className="text-sm font-bold text-purple-600">{user.fastPoints} FP</p>
-            </div>
-            <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">LV{user.level}</span>
-            </div>
-          </div>
+          <UserAvatar 
+            user={user} 
+            onLogout={handleLogout} 
+            onOpenShare={handleOpenShare}
+          />
         </div>
       </header>
 
@@ -65,6 +163,13 @@ const Index = () => {
 
       {/* Navigation */}
       <Navigation currentView={currentView} setCurrentView={setCurrentView} />
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        fastingData={fastingData}
+      />
     </div>
   );
 };

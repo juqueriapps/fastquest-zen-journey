@@ -12,7 +12,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setCurrentView }) 
     { id: 'timer', icon: Timer, label: 'Timer' },
     { id: 'profile', icon: User, label: 'Perfil' },
     { id: 'achievements', icon: Award, label: 'Conquistas' },
-    { id: 'progress', icon: TrendingUp, label: 'Progresso' }
+    { id: 'progress', icon: TrendingUp, label: 'Social' }
   ];
 
   return (
