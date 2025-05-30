@@ -103,6 +103,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
     }
   };
 
+  const handleEmailStep = async () => {
+    setAuthStep('email');
+  };
+
   const providers: AuthProvider[] = [
     {
       id: 'instagram',
@@ -116,7 +120,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
       name: 'Email',
       icon: Mail,
       type: 'email',
-      handler: () => setAuthStep('email')
+      handler: handleEmailStep
     }
   ];
 
