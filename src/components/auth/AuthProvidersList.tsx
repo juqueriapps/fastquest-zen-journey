@@ -52,6 +52,10 @@ const AuthProvidersList: React.FC<AuthProvidersListProps> = ({
     }
   };
 
+  const handleEmailStep = async () => {
+    onEmailStep();
+  };
+
   const providers: AuthProvider[] = [
     {
       id: 'instagram',
@@ -65,7 +69,7 @@ const AuthProvidersList: React.FC<AuthProvidersListProps> = ({
       name: 'Email',
       icon: Mail,
       type: 'email',
-      handler: onEmailStep
+      handler: handleEmailStep
     }
   ];
 
