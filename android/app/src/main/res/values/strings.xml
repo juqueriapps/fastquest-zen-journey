@@ -1,0 +1,8 @@
+
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">FastQuest</string>
+    <string name="title_activity_main">FastQuest</string>
+    <string name="package_name">app.lovable.e6bf7ade4306491d997bb2ddc2c7d10c</string>
+    <string name="custom_url_scheme">app.lovable.e6bf7ade4306491d997bb2ddc2c7d10c</string>
+</resources>
