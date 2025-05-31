@@ -38,6 +38,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -46,6 +47,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -61,6 +63,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     });
 
     if (error) {
+      console.error('Login error:', error);
       toast({
         title: "Erro no login",
         description: error.message,
@@ -77,7 +80,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const signUp = async (email: string, password: string, username?: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+    // Use window.location.origin para garantir que funcione em qualquer ambiente
+    const redirectUrl = window.location.origin;
+    
+    console.log('Signing up with redirect URL:', redirectUrl);
     
     const { error } = await supabase.auth.signUp({
       email,
@@ -89,6 +95,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     });
 
     if (error) {
+      console.error('Signup error:', error);
       toast({
         title: "Erro no cadastro",
         description: error.message,
@@ -115,11 +122,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const resetPassword = async (email: string) => {
+    // Use window.location.origin para garantir que funcione em qualquer ambiente
+    const redirectUrl = window.location.origin;
+    
+    console.log('Resetting password with redirect URL:', redirectUrl);
+    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/`,
+      redirectTo: redirectUrl,
     });
 
     if (error) {
+      console.error('Reset password error:', error);
       toast({
         title: "Erro ao redefinir senha",
         description: error.message,
