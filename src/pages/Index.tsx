@@ -27,6 +27,15 @@ const Index = () => {
     achievement: 'Guerreiro da Madrugada'
   });
 
+  // Criar objeto de usuário para o UserProfile com dados simulados
+  const userProfileData = user ? {
+    name: user.user_metadata?.username || user.email?.split('@')[0] || 'Usuário',
+    level: 5,
+    fastPoints: 1250,
+    currentStreak: 12,
+    totalFasts: 48
+  } : null;
+
   const handleOpenShare = () => {
     setIsShareModalOpen(true);
   };
@@ -36,7 +45,7 @@ const Index = () => {
       case 'timer':
         return <FastTimer user={user} setUser={() => {}} />;
       case 'profile':
-        return user ? <UserProfile user={user} /> : null;
+        return user && userProfileData ? <UserProfile user={userProfileData} /> : null;
       case 'achievements':
         return user ? <Achievements user={user} /> : null;
       case 'progress':
