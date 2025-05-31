@@ -3,42 +3,43 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { User, LogOut, Settings, Share } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface UserAvatarProps {
-  user: {
-    username: string;
-    avatar?: string;
-    level: number;
-    fastPoints: number;
-  };
-  onLogout: () => void;
   onOpenShare: () => void;
 }
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ user, onLogout, onOpenShare }) => {
+const UserAvatar: React.FC<UserAvatarProps> = ({ onOpenShare }) => {
+  const { user, signOut } = useAuth();
+
+  if (!user) return null;
+
+  const username = user.user_metadata?.username || user.email?.split('@')[0] || 'Usuário';
+  const avatar = user.user_metadata?.avatar_url;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
           <div className="text-right">
             <p className="text-xs text-gray-500">FastPoints</p>
-            <p className="text-sm font-bold text-purple-600">{user.fastPoints} FP</p>
+            <p className="text-sm font-bold text-purple-600">1250 FP</p>
           </div>
           <Avatar className="w-8 h-8 border-2 border-purple-200">
-            <AvatarImage src={user.avatar} alt={user.username} />
+            <AvatarImage src={avatar} alt={username} />
             <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs">
-              {user.username.charAt(0).toUpperCase()}
+              {username.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center">
-            <span className="text-white text-xs font-bold">LV{user.level}</span>
+            <span className="text-white text-xs font-bold">LV5</span>
           </div>
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <div className="px-3 py-2">
-          <p className="text-sm font-medium">{user.username}</p>
-          <p className="text-xs text-gray-500">Nível {user.level}</p>
+          <p className="text-sm font-medium">{username}</p>
+          <p className="text-xs text-gray-500">{user.email}</p>
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onOpenShare}>
@@ -54,7 +55,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, onLogout, onOpenShare }) 
           Configurações
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={onLogout} className="text-red-600">
+        <DropdownMenuItem onClick={signOut} className="text-red-600">
           <LogOut className="w-4 h-4 mr-2" />
           Sair
         </DropdownMenuItem>

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Timer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FastTimer from '@/components/FastTimer';
@@ -11,12 +11,13 @@ import AuthModal from '@/components/auth/AuthModal';
 import UserAvatar from '@/components/auth/UserAvatar';
 import ShareModal from '@/components/sharing/ShareModal';
 import SocialLeaderboard from '@/components/sharing/SocialLeaderboard';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState('timer');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const { user, loading } = useAuth();
 
   // Simulação de dados do usuário para compartilhamento
   const [fastingData, setFastingData] = useState({
@@ -26,35 +27,6 @@ const Index = () => {
     achievement: 'Guerreiro da Madrugada'
   });
 
-  // Verificar se há usuário logado ao carregar
-  useEffect(() => {
-    const savedUser = localStorage.getItem('fastquest_user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        localStorage.removeItem('fastquest_user');
-      }
-    }
-  }, []);
-
-  const handleAuthSuccess = (newUser: any) => {
-    const userWithStats = {
-      ...newUser,
-      level: 5,
-      fastPoints: 1250,
-      currentStreak: 12,
-      totalFasts: 48
-    };
-    setUser(userWithStats);
-    localStorage.setItem('fastquest_user', JSON.stringify(userWithStats));
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('fastquest_user');
-  };
-
   const handleOpenShare = () => {
     setIsShareModalOpen(true);
   };
@@ -62,7 +34,7 @@ const Index = () => {
   const renderView = () => {
     switch (currentView) {
       case 'timer':
-        return <FastTimer user={user} setUser={setUser} />;
+        return <FastTimer user={user} setUser={() => {}} />;
       case 'profile':
         return user ? <UserProfile user={user} /> : null;
       case 'achievements':
@@ -70,9 +42,23 @@ const Index = () => {
       case 'progress':
         return user ? <SocialLeaderboard /> : null;
       default:
-        return <FastTimer user={user} setUser={setUser} />;
+        return <FastTimer user={user} setUser={() => {}} />;
     }
   };
+
+  // Show loading spinner while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <Timer className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Se não há usuário logado, mostrar tela de login
   if (!user) {
@@ -128,7 +114,6 @@ const Index = () => {
         <AuthModal
           isOpen={isAuthModalOpen}
           onClose={() => setIsAuthModalOpen(false)}
-          onSuccess={handleAuthSuccess}
         />
       </div>
     );
@@ -147,11 +132,7 @@ const Index = () => {
               FastQuest
             </h1>
           </div>
-          <UserAvatar 
-            user={user} 
-            onLogout={handleLogout} 
-            onOpenShare={handleOpenShare}
-          />
+          <UserAvatar onOpenShare={handleOpenShare} />
         </div>
       </header>
 
