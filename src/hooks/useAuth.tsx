@@ -80,16 +80,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const signUp = async (email: string, password: string, username?: string) => {
-    // Use window.location.origin para garantir que funcione em qualquer ambiente
-    const redirectUrl = window.location.origin;
+    // Usar a URL completa do ambiente atual
+    const currentUrl = window.location.href;
+    const baseUrl = currentUrl.includes('lovableproject.com') 
+      ? window.location.origin 
+      : 'https://e6bf7ade-4306-491d-997b-b2ddc2c7d10c.lovableproject.com';
     
-    console.log('Signing up with redirect URL:', redirectUrl);
+    console.log('Signing up with redirect URL:', baseUrl);
+    console.log('Current URL:', currentUrl);
     
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
+        emailRedirectTo: baseUrl,
         data: username ? { username } : undefined
       }
     });
@@ -122,13 +126,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const resetPassword = async (email: string) => {
-    // Use window.location.origin para garantir que funcione em qualquer ambiente
-    const redirectUrl = window.location.origin;
+    // Usar a URL completa do ambiente atual
+    const currentUrl = window.location.href;
+    const baseUrl = currentUrl.includes('lovableproject.com') 
+      ? window.location.origin 
+      : 'https://e6bf7ade-4306-491d-997b-b2ddc2c7d10c.lovableproject.com';
     
-    console.log('Resetting password with redirect URL:', redirectUrl);
+    console.log('Resetting password with redirect URL:', baseUrl);
+    console.log('Current URL:', currentUrl);
     
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl,
+      redirectTo: baseUrl,
     });
 
     if (error) {
