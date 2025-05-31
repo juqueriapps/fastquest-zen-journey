@@ -7,9 +7,16 @@ import { useAuth } from '@/hooks/useAuth';
 
 interface UserAvatarProps {
   onOpenShare: () => void;
+  userData: {
+    name: string;
+    level: number;
+    fastPoints: number;
+    currentStreak: number;
+    totalFasts: number;
+  };
 }
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ onOpenShare }) => {
+const UserAvatar: React.FC<UserAvatarProps> = ({ onOpenShare, userData }) => {
   const { user, signOut } = useAuth();
 
   if (!user) return null;
@@ -23,7 +30,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ onOpenShare }) => {
         <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
           <div className="text-right">
             <p className="text-xs text-gray-500">FastPoints</p>
-            <p className="text-sm font-bold text-purple-600">1250 FP</p>
+            <p className="text-sm font-bold text-purple-600">{userData.fastPoints} FP</p>
           </div>
           <Avatar className="w-8 h-8 border-2 border-purple-200">
             <AvatarImage src={avatar} alt={username} />
@@ -32,7 +39,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ onOpenShare }) => {
             </AvatarFallback>
           </Avatar>
           <div className="w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center">
-            <span className="text-white text-xs font-bold">LV5</span>
+            <span className="text-white text-xs font-bold">LV{userData.level}</span>
           </div>
         </div>
       </DropdownMenuTrigger>

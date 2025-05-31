@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Timer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FastTimer from '@/components/FastTimer';
@@ -13,28 +13,72 @@ import ShareModal from '@/components/sharing/ShareModal';
 import SocialLeaderboard from '@/components/sharing/SocialLeaderboard';
 import { useAuth } from '@/hooks/useAuth';
 
+// Interface para os dados do usuário
+interface UserData {
+  name: string;
+  level: number;
+  fastPoints: number;
+  currentStreak: number;
+  totalFasts: number;
+}
+
 const Index = () => {
   const [currentView, setCurrentView] = useState('timer');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { user, loading } = useAuth();
 
-  // Simulação de dados do usuário para compartilhamento
-  const [fastingData, setFastingData] = useState({
-    duration: '16h',
-    streak: 12,
-    level: 5,
-    achievement: 'Guerreiro da Madrugada'
+  // Estado para os dados do usuário
+  const [userData, setUserData] = useState<UserData>({
+    name: 'Usuário',
+    level: 1,
+    fastPoints: 0,
+    currentStreak: 0,
+    totalFasts: 0
   });
 
-  // Criar objeto de usuário para o UserProfile com dados simulados
-  const userProfileData = user ? {
-    name: user.user_metadata?.username || user.email?.split('@')[0] || 'Usuário',
-    level: 5,
-    fastPoints: 1250,
-    currentStreak: 12,
-    totalFasts: 48
-  } : null;
+  // Carregar dados do usuário do localStorage quando o componente monta
+  useEffect(() => {
+    if (user) {
+      const savedData = localStorage.getItem(`userData_${user.id}`);
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        setUserData(parsedData);
+      } else {
+        // Dados iniciais para novo usuário
+        const initialData = {
+          name: user.user_metadata?.username || user.email?.split('@')[0] || 'Usuário',
+          level: 1,
+          fastPoints: 0,
+          currentStreak: 0,
+          totalFasts: 0
+        };
+        setUserData(initialData);
+        localStorage.setItem(`userData_${user.id}`, JSON.stringify(initialData));
+      }
+    }
+  }, [user]);
+
+  // Função para atualizar dados do usuário
+  const updateUserData = (newData: Partial<UserData>) => {
+    const updatedData = { ...userData, ...newData };
+    // Calcular nível baseado nos FastPoints
+    const newLevel = Math.floor(updatedData.fastPoints / 200) + 1;
+    updatedData.level = newLevel;
+    
+    setUserData(updatedData);
+    if (user) {
+      localStorage.setItem(`userData_${user.id}`, JSON.stringify(updatedData));
+    }
+  };
+
+  // Dados para compartilhamento
+  const fastingData = {
+    duration: '16h',
+    streak: userData.currentStreak,
+    level: userData.level,
+    achievement: userData.level >= 5 ? 'Guerreiro da Madrugada' : 'Jejuador Iniciante'
+  };
 
   const handleOpenShare = () => {
     setIsShareModalOpen(true);
@@ -43,15 +87,15 @@ const Index = () => {
   const renderView = () => {
     switch (currentView) {
       case 'timer':
-        return <FastTimer user={user} setUser={() => {}} />;
+        return <FastTimer userData={userData} updateUserData={updateUserData} />;
       case 'profile':
-        return user && userProfileData ? <UserProfile user={userProfileData} /> : null;
+        return user ? <UserProfile user={userData} /> : null;
       case 'achievements':
         return user ? <Achievements user={user} /> : null;
       case 'progress':
         return user ? <SocialLeaderboard /> : null;
       default:
-        return <FastTimer user={user} setUser={() => {}} />;
+        return <FastTimer userData={userData} updateUserData={updateUserData} />;
     }
   };
 
@@ -141,7 +185,7 @@ const Index = () => {
               FastQuest
             </h1>
           </div>
-          <UserAvatar onOpenShare={handleOpenShare} />
+          <UserAvatar onOpenShare={handleOpenShare} userData={userData} />
         </div>
       </header>
 

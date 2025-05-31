@@ -5,12 +5,20 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 
-interface FastTimerProps {
-  user: any;
-  setUser: (user: any) => void;
+interface UserData {
+  name: string;
+  level: number;
+  fastPoints: number;
+  currentStreak: number;
+  totalFasts: number;
 }
 
-const FastTimer: React.FC<FastTimerProps> = ({ user, setUser }) => {
+interface FastTimerProps {
+  userData: UserData;
+  updateUserData: (newData: Partial<UserData>) => void;
+}
+
+const FastTimer: React.FC<FastTimerProps> = ({ userData, updateUserData }) => {
   const [isActive, setIsActive] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0); // em segundos
   const [targetHours, setTargetHours] = useState(16);
@@ -65,11 +73,11 @@ const FastTimer: React.FC<FastTimerProps> = ({ user, setUser }) => {
   const completeFast = () => {
     if (timeElapsed >= targetHours * 3600) {
       const pointsEarned = Math.floor(timeElapsed / 3600) * 10;
-      setUser({
-        ...user,
-        fastPoints: user.fastPoints + pointsEarned,
-        currentStreak: user.currentStreak + 1,
-        totalFasts: user.totalFasts + 1
+      
+      updateUserData({
+        fastPoints: userData.fastPoints + pointsEarned,
+        currentStreak: userData.currentStreak + 1,
+        totalFasts: userData.totalFasts + 1
       });
       
       toast({
@@ -84,6 +92,12 @@ const FastTimer: React.FC<FastTimerProps> = ({ user, setUser }) => {
         title: "Jejum interrompido 😢",
         description: "Não desista! Tente novamente quando estiver pronto.",
       });
+      
+      // Quebra a sequência se o jejum foi interrompido antes do tempo
+      updateUserData({
+        currentStreak: 0
+      });
+      
       setIsActive(false);
       setTimeElapsed(0);
     }
@@ -173,15 +187,15 @@ const FastTimer: React.FC<FastTimerProps> = ({ user, setUser }) => {
       {/* Estatísticas Rápidas */}
       <div className="grid grid-cols-3 gap-3">
         <Card className="p-3 text-center bg-white/70 backdrop-blur-sm border-0">
-          <div className="text-lg font-bold text-blue-600">{user.currentStreak}</div>
+          <div className="text-lg font-bold text-blue-600">{userData.currentStreak}</div>
           <div className="text-xs text-gray-500">Sequência</div>
         </Card>
         <Card className="p-3 text-center bg-white/70 backdrop-blur-sm border-0">
-          <div className="text-lg font-bold text-green-600">{user.totalFasts}</div>
+          <div className="text-lg font-bold text-green-600">{userData.totalFasts}</div>
           <div className="text-xs text-gray-500">Jejuns</div>
         </Card>
         <Card className="p-3 text-center bg-white/70 backdrop-blur-sm border-0">
-          <div className="text-lg font-bold text-purple-600">LV{user.level}</div>
+          <div className="text-lg font-bold text-purple-600">LV{userData.level}</div>
           <div className="text-xs text-gray-500">Nível</div>
         </Card>
       </div>
