@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Timer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -62,8 +61,17 @@ const Index = () => {
   // Função para atualizar dados do usuário
   const updateUserData = (newData: Partial<UserData>) => {
     const updatedData = { ...userData, ...newData };
-    // Calcular nível baseado nos FastPoints
-    const newLevel = Math.floor(updatedData.fastPoints / 200) + 1;
+    // Sistema de níveis progressivo - cada nível requer mais pontos
+    let newLevel = 1;
+    let pointsNeeded = 200; // Primeiro nível
+    let totalPointsForLevel = 0;
+    
+    while (totalPointsForLevel + pointsNeeded <= updatedData.fastPoints) {
+      totalPointsForLevel += pointsNeeded;
+      newLevel++;
+      pointsNeeded = Math.floor(pointsNeeded * 1.5); // Aumenta 50% a cada nível
+    }
+    
     updatedData.level = newLevel;
     
     setUserData(updatedData);
@@ -91,7 +99,7 @@ const Index = () => {
       case 'profile':
         return user ? <UserProfile user={userData} /> : null;
       case 'achievements':
-        return user ? <Achievements user={user} /> : null;
+        return user ? <Achievements userData={userData} updateUserData={updateUserData} /> : null;
       case 'progress':
         return user ? <SocialLeaderboard /> : null;
       default:
