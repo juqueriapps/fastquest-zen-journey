@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import GoogleAuthButton from './GoogleAuthButton';
 
 interface SignupFormProps {
   onSwitchToLogin: () => void;
@@ -17,7 +16,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
   const [username, setUsername] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signUp, signInWithGoogle } = useAuth();
+  const { signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,12 +27,6 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
     setIsLoading(false);
   };
 
-  const handleGoogleSignup = async () => {
-    setIsLoading(true);
-    await signInWithGoogle();
-    setIsLoading(false);
-  };
-
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -41,22 +34,6 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
           Criar sua conta
         </h2>
         <p className="text-gray-600 mt-2">Preencha os dados para se cadastrar</p>
-      </div>
-
-      <div className="space-y-4">
-        <GoogleAuthButton
-          isLoading={isLoading}
-          onClick={handleGoogleSignup}
-        />
-        
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-300" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-gray-500">ou</span>
-          </div>
-        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
