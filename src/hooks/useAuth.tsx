@@ -10,6 +10,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, username?: string) => Promise<{ error: any }>;
+  signInWithGoogle: () => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
 }
@@ -73,6 +74,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       toast({
         title: "Login realizado com sucesso!",
         description: "Bem-vindo de volta!",
+      });
+    }
+
+    return { error };
+  };
+
+  const signInWithGoogle = async () => {
+    const currentUrl = window.location.href;
+    const baseUrl = currentUrl.includes('lovableproject.com') 
+      ? window.location.origin 
+      : 'https://e6bf7ade-4306-491d-997b-b2ddc2c7d10c.lovableproject.com';
+    
+    console.log('Google auth with redirect URL:', baseUrl);
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: baseUrl,
+      }
+    });
+
+    if (error) {
+      console.error('Google auth error:', error);
+      toast({
+        title: "Erro no login com Google",
+        description: error.message,
+        variant: "destructive"
       });
     }
 
@@ -162,6 +190,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     loading,
     signIn,
     signUp,
+    signInWithGoogle,
     signOut,
     resetPassword,
   };
