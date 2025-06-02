@@ -178,10 +178,10 @@ const FastTimer: React.FC<FastTimerProps> = ({ userData, updateUserData }) => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       {/* Timer Principal */}
       <Card className="p-6 bg-white/70 backdrop-blur-sm border-0 shadow-lg">
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-6">
           {/* Círculo de Progresso */}
           <div className="relative w-48 h-48 mx-auto">
             <svg className="w-48 h-48 transform -rotate-90" viewBox="0 0 100 100">
@@ -222,18 +222,20 @@ const FastTimer: React.FC<FastTimerProps> = ({ userData, updateUserData }) => {
           </div>
 
           {/* Fase Atual */}
-          <div className="space-y-2">
-            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-white text-sm ${currentPhase.color}`}>
+          <div className="space-y-3">
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-white text-sm font-medium ${currentPhase.color}`}>
               <Clock className="w-4 h-4" />
               {currentPhase.phase}
             </div>
-            <p className="text-xs text-gray-600 max-w-sm mx-auto">
-              {currentPhase.description}
-            </p>
+            <div className="px-4">
+              <p className="text-sm text-gray-600 leading-relaxed max-w-xs mx-auto">
+                {currentPhase.description}
+              </p>
+            </div>
           </div>
 
           {/* Controles */}
-          <div className="flex gap-3 justify-center">
+          <div className="flex gap-3 justify-center pt-2">
             {!fastingSession.isActive ? (
               <Button onClick={startFast} className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700">
                 <Play className="w-4 h-4 mr-2" />
@@ -257,24 +259,24 @@ const FastTimer: React.FC<FastTimerProps> = ({ userData, updateUserData }) => {
 
       {/* Estatísticas Rápidas */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="p-3 text-center bg-white/70 backdrop-blur-sm border-0">
-          <div className="text-lg font-bold text-blue-600">{userData.currentStreak}</div>
-          <div className="text-xs text-gray-500">Sequência</div>
+        <Card className="p-4 text-center bg-white/70 backdrop-blur-sm border-0">
+          <div className="text-xl font-bold text-blue-600">{userData.currentStreak}</div>
+          <div className="text-xs text-gray-500 mt-1">Sequência</div>
         </Card>
-        <Card className="p-3 text-center bg-white/70 backdrop-blur-sm border-0">
-          <div className="text-lg font-bold text-green-600">{userData.totalFasts}</div>
-          <div className="text-xs text-gray-500">Jejuns</div>
+        <Card className="p-4 text-center bg-white/70 backdrop-blur-sm border-0">
+          <div className="text-xl font-bold text-green-600">{userData.totalFasts}</div>
+          <div className="text-xs text-gray-500 mt-1">Jejuns</div>
         </Card>
-        <Card className="p-3 text-center bg-white/70 backdrop-blur-sm border-0">
-          <div className="text-lg font-bold text-purple-600">LV{userData.level}</div>
-          <div className="text-xs text-gray-500">Nível</div>
+        <Card className="p-4 text-center bg-white/70 backdrop-blur-sm border-0">
+          <div className="text-xl font-bold text-purple-600">LV{userData.level}</div>
+          <div className="text-xs text-gray-500 mt-1">Nível</div>
         </Card>
       </div>
 
       {/* Seletor de Tipo de Jejum */}
-      <Card className="p-4 bg-white/70 backdrop-blur-sm border-0">
-        <h3 className="font-semibold text-gray-800 mb-3">Tipo de Jejum</h3>
-        <div className="grid grid-cols-2 gap-2">
+      <Card className="p-5 bg-white/70 backdrop-blur-sm border-0">
+        <h3 className="font-semibold text-gray-800 mb-4">Tipo de Jejum</h3>
+        <div className="grid grid-cols-2 gap-3">
           {fastingOptions.map(option => (
             <Button
               key={option.hours}
@@ -282,21 +284,23 @@ const FastTimer: React.FC<FastTimerProps> = ({ userData, updateUserData }) => {
               variant={fastingSession.targetHours === option.hours ? "default" : "outline"}
               size="sm"
               disabled={fastingSession.isActive}
-              className={`flex flex-col h-auto py-3 ${
+              className={`flex flex-col h-auto py-4 ${
                 fastingSession.targetHours === option.hours 
                   ? "bg-gradient-to-r from-blue-500 to-purple-500" 
                   : ""
               }`}
             >
-              <span className="font-bold">{option.label}</span>
-              <span className="text-xs opacity-75">{option.description}</span>
+              <span className="font-bold text-base">{option.label}</span>
+              <span className="text-xs opacity-75 mt-1">{option.description}</span>
             </Button>
           ))}
         </div>
         {fastingSession.isActive && (
-          <p className="text-xs text-amber-600 mt-2 text-center">
-            ⚠️ Não é possível alterar a meta durante o jejum
-          </p>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-4">
+            <p className="text-sm text-amber-700 text-center">
+              ⚠️ Não é possível alterar a meta durante o jejum
+            </p>
+          </div>
         )}
       </Card>
     </div>
