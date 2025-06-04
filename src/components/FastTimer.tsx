@@ -18,57 +18,20 @@ interface FastTimerProps {
   updateUserData: (newData: Partial<UserData>) => void;
 }
 
-interface FastingSession {
-  isActive: boolean;
-  timeElapsed: number;
-  targetHours: number;
-  startTime?: number;
-}
-
 const FastTimer: React.FC<FastTimerProps> = ({ userData, updateUserData }) => {
-  const [fastingSession, setFastingSession] = useState<FastingSession>({
-    isActive: false,
-    timeElapsed: 0,
-    targetHours: 16
-  });
+  const [isActive, setIsActive] = useState(false);
+  const [timeElapsed, setTimeElapsed] = useState(0); // em segundos
+  const [targetHours, setTargetHours] = useState(16);
 
-  // Carregar sessão salva ao montar o componente
-  useEffect(() => {
-    const savedSession = localStorage.getItem('fastingSession');
-    if (savedSession) {
-      const session: FastingSession = JSON.parse(savedSession);
-      if (session.isActive && session.startTime) {
-        // Calcular tempo decorrido baseado no tempo de início
-        const now = Date.now();
-        const elapsed = Math.floor((now - session.startTime) / 1000);
-        setFastingSession({
-          ...session,
-          timeElapsed: elapsed
-        });
-      } else {
-        setFastingSession(session);
-      }
-    }
-  }, []);
-
-  // Salvar sessão no localStorage sempre que mudar
-  useEffect(() => {
-    localStorage.setItem('fastingSession', JSON.stringify(fastingSession));
-  }, [fastingSession]);
-
-  // Timer que roda continuamente quando ativo
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (fastingSession.isActive) {
+    if (isActive) {
       interval = setInterval(() => {
-        setFastingSession(prev => ({
-          ...prev,
-          timeElapsed: prev.timeElapsed + 1
-        }));
+        setTimeElapsed(prev => prev + 1);
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [fastingSession.isActive]);
+  }, [isActive]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -78,27 +41,21 @@ const FastTimer: React.FC<FastTimerProps> = ({ userData, updateUserData }) => {
   };
 
   const getProgress = () => {
-    const targetSeconds = fastingSession.targetHours * 3600;
-    return Math.min((fastingSession.timeElapsed / targetSeconds) * 100, 100);
+    const targetSeconds = targetHours * 3600;
+    return Math.min((timeElapsed / targetSeconds) * 100, 100);
   };
 
   const getFastingPhase = () => {
-    const hours = Math.floor(fastingSession.timeElapsed / 3600);
+    const hours = Math.floor(timeElapsed / 3600);
     if (hours < 4) return { phase: 'Digestão', color: 'bg-blue-500', description: 'Seu corpo está processando os alimentos' };
     if (hours < 8) return { phase: 'Início do Jejum', color: 'bg-green-500', description: 'Glicose sendo utilizada como energia' };
     if (hours < 12) return { phase: 'Queima de Gordura', color: 'bg-yellow-500', description: 'Corpo começando a usar gordura como combustível' };
     if (hours < 16) return { phase: 'Cetose Leve', color: 'bg-orange-500', description: 'Produção de cetonas aumentando' };
-    if (hours < 24) return { phase: 'Cetose Profunda', color: 'bg-purple-500', description: 'Máxima queima de gordura e clareza mental' };
-    if (hours < 48) return { phase: 'Autofagia', color: 'bg-indigo-500', description: 'Renovação celular intensificada' };
-    return { phase: 'Jejum Estendido', color: 'bg-red-500', description: 'Benefícios metabólicos profundos' };
+    return { phase: 'Cetose Profunda', color: 'bg-purple-500', description: 'Máxima queima de gordura e clareza mental' };
   };
 
   const startFast = () => {
-    setFastingSession(prev => ({
-      ...prev,
-      isActive: true,
-      startTime: Date.now() - (prev.timeElapsed * 1000)
-    }));
+    setIsActive(true);
     toast({
       title: "Jejum iniciado! 🚀",
       description: "Que sua jornada seja cheia de conquistas!",
@@ -106,11 +63,7 @@ const FastTimer: React.FC<FastTimerProps> = ({ userData, updateUserData }) => {
   };
 
   const pauseFast = () => {
-    setFastingSession(prev => ({
-      ...prev,
-      isActive: false,
-      startTime: undefined
-    }));
+    setIsActive(false);
     toast({
       title: "Jejum pausado ⏸️",
       description: "Retome quando estiver pronto!",
@@ -118,8 +71,8 @@ const FastTimer: React.FC<FastTimerProps> = ({ userData, updateUserData }) => {
   };
 
   const completeFast = () => {
-    if (fastingSession.timeElapsed >= fastingSession.targetHours * 3600) {
-      const pointsEarned = Math.floor(fastingSession.timeElapsed / 3600) * 10;
+    if (timeElapsed >= targetHours * 3600) {
+      const pointsEarned = Math.floor(timeElapsed / 3600) * 10;
       
       updateUserData({
         fastPoints: userData.fastPoints + pointsEarned,
@@ -132,50 +85,26 @@ const FastTimer: React.FC<FastTimerProps> = ({ userData, updateUserData }) => {
         description: `Jejum completado! +${pointsEarned} FastPoints`,
       });
       
-      setFastingSession({
-        isActive: false,
-        timeElapsed: 0,
-        targetHours: fastingSession.targetHours,
-        startTime: undefined
-      });
+      setIsActive(false);
+      setTimeElapsed(0);
     } else {
       toast({
         title: "Jejum interrompido 😢",
         description: "Não desista! Tente novamente quando estiver pronto.",
       });
       
+      // Quebra a sequência se o jejum foi interrompido antes do tempo
       updateUserData({
         currentStreak: 0
       });
       
-      setFastingSession({
-        isActive: false,
-        timeElapsed: 0,
-        targetHours: fastingSession.targetHours,
-        startTime: undefined
-      });
-    }
-  };
-
-  const updateTargetHours = (hours: number) => {
-    if (!fastingSession.isActive) {
-      setFastingSession(prev => ({
-        ...prev,
-        targetHours: hours
-      }));
+      setIsActive(false);
+      setTimeElapsed(0);
     }
   };
 
   const currentPhase = getFastingPhase();
   const progress = getProgress();
-
-  const fastingOptions = [
-    { hours: 12, label: '12h', description: 'Iniciante' },
-    { hours: 16, label: '16h', description: 'Clássico' },
-    { hours: 24, label: '24h', description: 'OMAD' },
-    { hours: 32, label: '32h', description: 'Avançado' },
-    { hours: 48, label: '48h', description: 'Extremo' }
-  ];
 
   return (
     <div className="space-y-6">
@@ -213,10 +142,10 @@ const FastTimer: React.FC<FastTimerProps> = ({ userData, updateUserData }) => {
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <div className="text-3xl font-bold text-gray-800">
-                {formatTime(fastingSession.timeElapsed)}
+                {formatTime(timeElapsed)}
               </div>
               <div className="text-sm text-gray-500">
-                Meta: {fastingSession.targetHours}h
+                Meta: {targetHours}h
               </div>
             </div>
           </div>
@@ -234,10 +163,10 @@ const FastTimer: React.FC<FastTimerProps> = ({ userData, updateUserData }) => {
 
           {/* Controles */}
           <div className="flex gap-3 justify-center">
-            {!fastingSession.isActive ? (
+            {!isActive ? (
               <Button onClick={startFast} className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700">
                 <Play className="w-4 h-4 mr-2" />
-                {fastingSession.timeElapsed > 0 ? 'Retomar' : 'Iniciar'} Jejum
+                Iniciar Jejum
               </Button>
             ) : (
               <>
@@ -271,33 +200,22 @@ const FastTimer: React.FC<FastTimerProps> = ({ userData, updateUserData }) => {
         </Card>
       </div>
 
-      {/* Seletor de Tipo de Jejum */}
+      {/* Seletor de Meta */}
       <Card className="p-4 bg-white/70 backdrop-blur-sm border-0">
-        <h3 className="font-semibold text-gray-800 mb-3">Tipo de Jejum</h3>
-        <div className="grid grid-cols-2 gap-2">
-          {fastingOptions.map(option => (
+        <h3 className="font-semibold text-gray-800 mb-3">Meta de Jejum</h3>
+        <div className="flex gap-2">
+          {[12, 14, 16, 18, 20, 24].map(hours => (
             <Button
-              key={option.hours}
-              onClick={() => updateTargetHours(option.hours)}
-              variant={fastingSession.targetHours === option.hours ? "default" : "outline"}
+              key={hours}
+              onClick={() => setTargetHours(hours)}
+              variant={targetHours === hours ? "default" : "outline"}
               size="sm"
-              disabled={fastingSession.isActive}
-              className={`flex flex-col h-auto py-3 ${
-                fastingSession.targetHours === option.hours 
-                  ? "bg-gradient-to-r from-blue-500 to-purple-500" 
-                  : ""
-              }`}
+              className={targetHours === hours ? "bg-gradient-to-r from-blue-500 to-purple-500" : ""}
             >
-              <span className="font-bold">{option.label}</span>
-              <span className="text-xs opacity-75">{option.description}</span>
+              {hours}h
             </Button>
           ))}
         </div>
-        {fastingSession.isActive && (
-          <p className="text-xs text-amber-600 mt-2 text-center">
-            ⚠️ Não é possível alterar a meta durante o jejum
-          </p>
-        )}
       </Card>
     </div>
   );
