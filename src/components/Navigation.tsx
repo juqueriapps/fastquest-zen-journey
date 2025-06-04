@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Timer, User, Award, TrendingUp } from 'lucide-react';
 
